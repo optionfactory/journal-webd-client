@@ -6,6 +6,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 import jakarta.websocket.ContainerProvider;
+import java.time.Duration;
 import java.util.concurrent.CompletableFuture;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.TextMessage;
@@ -17,16 +18,31 @@ import org.springframework.web.socket.client.standard.StandardWebSocketClient;
 
 public class StreamingJournalClient {
 
-    private final URI uri;
-    private final String token;
+    private final Configuration conf;
     private final StandardWebSocketClient client;
     private final ObjectMapper om;
 
-    public StreamingJournalClient(URI uri, String token) {
-        this.uri = uri;
-        this.token = token;
+    public record Configuration(URI uri, String bearerToken, Duration sendTimeout, Duration idleSessionTimeout, int maxBinaryBufferSize, int maxTextBufferSize) {
+
+        public static Configuration withDefaults(URI uri, String bearerToken) {
+            return new Configuration(
+                    uri,
+                    bearerToken,
+                    Duration.ofSeconds(1),
+                    Duration.ofSeconds(30),
+                    4096,
+                    72 * 1024);
+
+        }
+    }
+
+    public StreamingJournalClient(Configuration conf) {
+        this.conf = conf;
         final var container = ContainerProvider.getWebSocketContainer();
-        container.setAsyncSendTimeout(1000);
+        container.setAsyncSendTimeout(conf.sendTimeout().toMillis());
+        container.setDefaultMaxSessionIdleTimeout(conf.idleSessionTimeout().toMillis());
+        container.setDefaultMaxBinaryMessageBufferSize(conf.maxBinaryBufferSize());
+        container.setDefaultMaxTextMessageBufferSize(conf.maxTextBufferSize());
         this.client = new StandardWebSocketClient(container);
         this.om = new ObjectMapper();
         om.addMixIn(JournalEntry.class, JournalEntryMixin.class);
@@ -34,7 +50,7 @@ public class StreamingJournalClient {
 
     public Stream<JournalEntry> stream(JournalRequest request) {
         final WebSocketHttpHeaders headers = new WebSocketHttpHeaders();
-        headers.add("Authorization", String.format("Bearer %s", token));
+        headers.add("Authorization", String.format("Bearer %s", conf.bearerToken()));
 
         final var q = new LinkedBlockingQueue<NetworkResult<JournalEntry>>(/*unlimited*/);
 
@@ -73,7 +89,7 @@ public class StreamingJournalClient {
             public boolean supportsPartialMessages() {
                 return false;
             }
-        }, headers, uri);
+        }, headers, conf.uri());
         session.whenComplete((sess, ex) -> {
             if (ex != null) {
                 q.add(NetworkResult.exception(ex));
@@ -82,7 +98,5 @@ public class StreamingJournalClient {
 
         return StreamSupport.stream(new BlockingQueueIterator<>(q), false);
     }
-
-
 
 }
