@@ -1,7 +1,7 @@
 package net.optionfactory.journalwebd.client;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import org.springframework.lang.Nullable;
+import org.jspecify.annotations.Nullable;
 
 @JsonInclude(value = JsonInclude.Include.NON_NULL)
 public record JournalRequest(

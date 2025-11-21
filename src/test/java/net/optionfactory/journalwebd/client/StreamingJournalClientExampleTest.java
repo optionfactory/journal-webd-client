@@ -1,7 +1,6 @@
 package net.optionfactory.journalwebd.client;
 
 import java.net.URI;
-import java.time.Duration;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 import net.optionfactory.journalwebd.client.StreamingJournalClient.Configuration;

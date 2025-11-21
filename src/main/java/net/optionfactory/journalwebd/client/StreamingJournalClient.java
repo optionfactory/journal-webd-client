@@ -1,6 +1,5 @@
 package net.optionfactory.journalwebd.client;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import java.net.URI;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.stream.Stream;
@@ -15,12 +14,13 @@ import org.springframework.web.socket.WebSocketHttpHeaders;
 import org.springframework.web.socket.WebSocketMessage;
 import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.client.standard.StandardWebSocketClient;
+import tools.jackson.databind.json.JsonMapper;
 
 public class StreamingJournalClient {
 
     private final Configuration conf;
     private final StandardWebSocketClient client;
-    private final ObjectMapper om;
+    private final JsonMapper om;
 
     public record Configuration(URI uri, String bearerToken, Duration sendTimeout, Duration idleSessionTimeout, int maxBinaryBufferSize, int maxTextBufferSize) {
 
@@ -44,8 +44,7 @@ public class StreamingJournalClient {
         container.setDefaultMaxBinaryMessageBufferSize(conf.maxBinaryBufferSize());
         container.setDefaultMaxTextMessageBufferSize(conf.maxTextBufferSize());
         this.client = new StandardWebSocketClient(container);
-        this.om = new ObjectMapper();
-        om.addMixIn(JournalEntry.class, JournalEntryMixin.class);
+        this.om = JsonMapper.builder().addMixIn(JournalEntry.class, JournalEntryMixin.class).build();
     }
 
     public Stream<JournalEntry> stream(JournalRequest request) {

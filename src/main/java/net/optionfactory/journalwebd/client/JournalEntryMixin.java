@@ -2,15 +2,13 @@ package net.optionfactory.journalwebd.client;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.DeserializationContext;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
-import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Iterator;
+import tools.jackson.core.JsonParser;
+import tools.jackson.databind.DeserializationContext;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.annotation.JsonDeserialize;
+import tools.jackson.databind.deser.std.StdDeserializer;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public record JournalEntryMixin(
@@ -35,8 +33,8 @@ public record JournalEntryMixin(
         }
 
         @Override
-        public String deserialize(JsonParser jp, DeserializationContext ctxt) throws IOException, JsonProcessingException {
-            final JsonNode node = jp.getCodec().readTree(jp);
+        public String deserialize(JsonParser jp, DeserializationContext ctxt) {
+            final JsonNode node = jp.readValueAsTree();
             if (node.isNull()) {
                 return null;
             }
@@ -47,7 +45,7 @@ public record JournalEntryMixin(
                 return node.toString();
             }
             final byte[] bytes = new byte[node.size()];
-            final Iterator<JsonNode> iter = node.elements();
+            final Iterator<JsonNode> iter = node.iterator();
             int i = 0;
             while (iter.hasNext()) {
                 bytes[i] = (byte) iter.next().asInt();
