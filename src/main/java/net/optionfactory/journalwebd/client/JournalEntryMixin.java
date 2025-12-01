@@ -7,8 +7,8 @@ import java.util.Iterator;
 import tools.jackson.core.JsonParser;
 import tools.jackson.databind.DeserializationContext;
 import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ValueDeserializer;
 import tools.jackson.databind.annotation.JsonDeserialize;
-import tools.jackson.databind.deser.std.StdDeserializer;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public record JournalEntryMixin(
@@ -26,11 +26,7 @@ public record JournalEntryMixin(
         @JsonProperty(value = "__REALTIME_TIMESTAMP")
         long timestamp) {
 
-    public static class FromStringOrArray extends StdDeserializer<String> {
-
-        public FromStringOrArray() {
-            super((Class) null);
-        }
+    public static class FromStringOrArray extends ValueDeserializer<String> {
 
         @Override
         public String deserialize(JsonParser jp, DeserializationContext ctxt) {
@@ -38,8 +34,8 @@ public record JournalEntryMixin(
             if (node.isNull()) {
                 return null;
             }
-            if (node.isTextual()) {
-                return node.asText();
+            if (node.isString()) {
+                return node.asString();
             }
             if (!node.isArray()) {
                 return node.toString();
