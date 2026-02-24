@@ -5,7 +5,7 @@
 
     <groupId>net.optionfactory</groupId>
     <artifactId>journal-webd-client</artifactId>
-    <version>2.2-SNAPSHOT</version>
+    <version>2.2</version>
     <packaging>jar</packaging>
     <description>journal-webd-client</description>
 
