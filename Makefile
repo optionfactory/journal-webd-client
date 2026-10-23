@@ -12,5 +12,5 @@ local-journal-webd:
 		-p8000:8000 \
 		--mount type=bind,source=${PWD}/local/configuration.json,target=/journal-webd-conf/configuration.json,readonly \
 		--mount type=bind,source=/var/log/journal/,target=/journal-webd-logs/,readonly \
-		optionfactory/debian13-journal-webd:209 
+		optionfactory/debian13-journal-webd:247 
 
