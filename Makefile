@@ -10,7 +10,7 @@ local-journal-webd:
 		-p8000:8000 \
 		--mount type=bind,source=${PWD}/local/configuration.json,target=/journal-webd-conf/configuration.json,readonly \
 		--mount type=bind,source=/var/log/journal/,target=/journal-webd-logs/,readonly \
-		optionfactory/debian13-journal-webd:247 
+		optionfactory/debian13-journal-webd:250 
 
 publish-central: committed gpg-unlock
 	$(eval VERSION = $(shell mvn -q -N help:evaluate -Dexpression=project.version -DforceStdout))
